@@ -1,0 +1,61 @@
+*.md
+
+# Python
+requirements-dev.txt
+pyproject.toml
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+wheels/
+sdist/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing & tooling (not needed in the image)
+tests/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Environment / secrets
+*-env.json
+.env
+.env.*
+*.env
+
+# Docker
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+# VCS
+.git/
+.gitignore
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+
+# AWS
+.aws-sam/
+cdk.out/
