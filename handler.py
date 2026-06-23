@@ -31,24 +31,18 @@ def _require_env(name: str) -> str:
     return value
 
 
-def transform_key(key: str, guard_prefix: str, strip_prefix: str, dest_prefix: str) -> str:
-    """Guard that *key* belongs to this lambda, strip *strip_prefix*, prepend *dest_prefix*.
+def transform_key(key: str, strip_prefix: str, dest_prefix: str) -> str:
+    """Strip *strip_prefix* off the front of *key* and prepend *dest_prefix*.
 
-    *guard_prefix* (SOURCE_PREFIX) determines ownership — raises ValueError if the key
-    does not match.  *strip_prefix* (STRIP_PREFIX) is the portion actually removed before
-    *dest_prefix* is prepended; it may be deeper than *guard_prefix*.
+    Both prefixes default to empty, so with neither set the key passes through unchanged.
+    Which objects reach the lambda is decided by the S3 event notification filter, not here.
     """
-    if not key.startswith(guard_prefix):
-        raise ValueError(f"Key '{key}' does not start with source prefix '{guard_prefix}'")
-    if not key.startswith(strip_prefix):
-        raise ValueError(f"Key '{key}' does not start with strip prefix '{strip_prefix}'")
     return dest_prefix + key[len(strip_prefix) :]
 
 
 def _handle_s3_record(
     s3_record: dict[str, Any],
     dest_bucket: str,
-    guard_prefix: str,
     strip_prefix: str,
     dest_prefix: str,
 ) -> None:
@@ -58,7 +52,7 @@ def _handle_s3_record(
     # Keys in S3 event notifications are URL-encoded.
     raw_key: str = s3_record["s3"]["object"]["key"]
     source_key = unquote_plus(raw_key)
-    dest_key = transform_key(source_key, guard_prefix, strip_prefix, dest_prefix)
+    dest_key = transform_key(source_key, strip_prefix, dest_prefix)
     s3 = _get_s3()
 
     if event_name.startswith("ObjectCreated"):
@@ -105,11 +99,10 @@ def handler(event: dict[str, Any], context: object) -> dict[str, Any]:
     individual failed messages without reprocessing successful ones.
     """
     dest_bucket = _require_env("DEST_BUCKET")
-    guard_prefix = _require_env("SOURCE_PREFIX")
-    # STRIP_PREFIX defaults to SOURCE_PREFIX when not set, preserving existing behaviour
-    # for deployments that strip at the same level they guard on.
-    strip_prefix = os.environ.get("STRIP_PREFIX") or guard_prefix
-    dest_prefix = _require_env("DEST_PREFIX")
+    strip_prefix = os.environ.get("STRIP_PREFIX") or os.environ.get("SOURCE_PREFIX") or ""
+    dest_prefix = os.environ.get("DEST_PREFIX", "")
+    if not os.environ.get("STRIP_PREFIX") and os.environ.get("SOURCE_PREFIX"):
+        logger.warning("SOURCE_PREFIX is deprecated and will be removed; use STRIP_PREFIX.")
 
     batch_item_failures: list[dict[str, str]] = []
 
@@ -122,7 +115,6 @@ def handler(event: dict[str, Any], context: object) -> dict[str, Any]:
                 _handle_s3_record(
                     s3_record,
                     dest_bucket,
-                    guard_prefix,
                     strip_prefix,
                     dest_prefix,
                 )

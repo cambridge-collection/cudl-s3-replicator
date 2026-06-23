@@ -17,31 +17,36 @@ On `ObjectRemoved:*`, if the corresponding destination object does not exist, th
 
 ### Key transformation
 
-`SOURCE_PREFIX` acts as a guard — events for keys that do not start with it are rejected.
-`STRIP_PREFIX` (optional, defaults to `SOURCE_PREFIX`) is the portion actually removed before `DEST_PREFIX` is prepended.
+`STRIP_PREFIX` is removed from the front of each key and `DEST_PREFIX` is prepended. Both default to empty, so with neither set the object is copied verbatim to the same key.
 
 ```
-SOURCE_PREFIX = "ui/"   STRIP_PREFIX = "ui/"   DEST_PREFIX = "html/"
+STRIP_PREFIX = "ui/"   DEST_PREFIX = "html/"
 
 ui/cudl-resources/path/to/file/A  →  html/cudl-resources/path/to/file/A
 ```
 
-`STRIP_PREFIX` can be set to a deeper path when you want to guard broadly but strip further:
+With no prefixes set, the key passes through unchanged:
 
 ```
-SOURCE_PREFIX = "ui/"   STRIP_PREFIX = "ui/cudl-resources/"   DEST_PREFIX = "html/"
+(no STRIP_PREFIX, no DEST_PREFIX)
 
-ui/cudl-resources/path/to/file/A  →  html/path/to/file/A
+ui/cudl-resources/path/to/file/A  →  ui/cudl-resources/path/to/file/A
 ```
+
+Which objects are processed is decided by the S3 event notification filter (`filter_prefix` / `filter_suffix`), not by the handler.
+
+> **Guardrail:** if `DEST_BUCKET` equals the source bucket, an identity copy re-triggers its own `ObjectCreated` notification → infinite loop. Keep the source and destination buckets distinct (as the data-source → data-releases flow already does).
 
 ## Configuration
 
-| Variable | Required | Example | Description |
+| Variable | Required | Default | Description |
 |---|---|---|---|
-| `DEST_BUCKET` | yes | `staging-cul-cudl-data-releases` | Destination S3 bucket |
-| `SOURCE_PREFIX` | yes | `ui/` | Guard prefix — events for keys not starting with this are rejected |
-| `DEST_PREFIX` | yes | `html/` | Prefix prepended to the destination key |
-| `STRIP_PREFIX` | no | `ui/cudl-resources/` | Prefix stripped from the source key before prepending `DEST_PREFIX`. Defaults to `SOURCE_PREFIX` |
+| `DEST_BUCKET` | yes | — | Destination S3 bucket |
+| `STRIP_PREFIX` | no | `""` | Prefix stripped off the front of the source key |
+| `DEST_PREFIX` | no | `""` | Prefix prepended after stripping |
+| `SOURCE_PREFIX` | no (**deprecated**) | — | Legacy alias for `STRIP_PREFIX`, honoured only when `STRIP_PREFIX` is unset. Logs a deprecation warning when used — prefer `STRIP_PREFIX` |
+
+With none of the prefix variables set, objects are copied verbatim to the same key.
 
 The source bucket is read from each S3 event notification (`s3.bucket.name`) rather than from configuration.
 
@@ -104,10 +109,10 @@ Add an entry to `transform-lambda-information` in the relevant `terraform.tfvars
   queue_name = "cudl-python-copy-queue"
 
   environment_variables = {
-    DEST_BUCKET   = "<destination-bucket-name>"
-    SOURCE_PREFIX = "ui/"
-    DEST_PREFIX   = "html/"
-    # STRIP_PREFIX omitted — defaults to SOURCE_PREFIX
+    DEST_BUCKET  = "<destination-bucket-name>"
+    STRIP_PREFIX = "ui/"
+    DEST_PREFIX  = "html/"
+    # Omit STRIP_PREFIX and DEST_PREFIX for a verbatim same-path copy.
   }
 }
 ```
@@ -128,7 +133,7 @@ Add an entry to `transform-lambda-information` in the relevant `terraform.tfvars
 
   environment_variables = {
     DEST_BUCKET       = "<destination-bucket-name>"
-    SOURCE_PREFIX     = "ui/"
+    STRIP_PREFIX      = "ui/"
     DEST_PREFIX       = "html/"
     DD_LAMBDA_HANDLER = "handler.handler"
   }
