@@ -65,11 +65,15 @@ def _s3_record(event_name: str, bucket: str, key: str) -> dict[str, Any]:
 
 
 def test_transform_key_strips_and_prepends() -> None:
-    assert h.transform_key("ui/cudl-resources/a/b", "ui/", "ui/", "html/") == "html/cudl-resources/a/b"
+    assert (
+        h.transform_key("ui/cudl-resources/a/b", "ui/", "ui/", "html/") == "html/cudl-resources/a/b"
+    )
 
 
 def test_transform_key_strip_prefix_deeper_than_guard() -> None:
-    assert h.transform_key("ui/cudl-resources/a/b", "ui/", "ui/cudl-resources/", "html/") == "html/a/b"
+    assert (
+        h.transform_key("ui/cudl-resources/a/b", "ui/", "ui/cudl-resources/", "html/") == "html/a/b"
+    )
 
 
 def test_transform_key_rejects_wrong_guard_prefix() -> None:

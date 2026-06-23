@@ -39,14 +39,10 @@ def transform_key(key: str, guard_prefix: str, strip_prefix: str, dest_prefix: s
     *dest_prefix* is prepended; it may be deeper than *guard_prefix*.
     """
     if not key.startswith(guard_prefix):
-        raise ValueError(
-            f"Key '{key}' does not start with source prefix '{guard_prefix}'"
-        )
+        raise ValueError(f"Key '{key}' does not start with source prefix '{guard_prefix}'")
     if not key.startswith(strip_prefix):
-        raise ValueError(
-            f"Key '{key}' does not start with strip prefix '{strip_prefix}'"
-        )
-    return dest_prefix + key[len(strip_prefix):]
+        raise ValueError(f"Key '{key}' does not start with strip prefix '{strip_prefix}'")
+    return dest_prefix + key[len(strip_prefix) :]
 
 
 def _handle_s3_record(
