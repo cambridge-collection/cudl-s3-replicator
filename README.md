@@ -45,6 +45,7 @@ Which objects are processed is decided by the S3 event notification filter (`fil
 | `STRIP_PREFIX` | no | `""` | Prefix stripped off the front of the source key |
 | `DEST_PREFIX` | no | `""` | Prefix prepended after stripping |
 | `SOURCE_PREFIX` | no (**deprecated**) | — | Legacy alias for `STRIP_PREFIX`, honoured only when `STRIP_PREFIX` is unset. Logs a deprecation warning when used — prefer `STRIP_PREFIX` |
+| `LOG_LEVEL` | no | `INFO` | Logging level (e.g. `DEBUG`, `INFO`, `WARNING`, `ERROR`). Unset or unrecognised falls back to `INFO` |
 
 With none of the prefix variables set, objects are copied verbatim to the same key.
 
