@@ -15,7 +15,21 @@ if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+
+
+def _resolve_log_level() -> int:
+    """LOG_LEVEL as a standard level name (e.g. DEBUG, INFO, WARNING); unset -> INFO, invalid -> error + INFO."""
+    name = os.environ.get("LOG_LEVEL")
+    if not name:
+        return logging.INFO
+    level = getattr(logging, name.upper(), None)
+    if isinstance(level, int):
+        return level
+    logger.error("Invalid LOG_LEVEL %r; falling back to INFO", name)
+    return logging.INFO
+
+
+logger.setLevel(_resolve_log_level())
 
 _s3: S3Client | None = None  # module-level client, replaced in tests
 
