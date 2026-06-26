@@ -1,0 +1,2 @@
+-r requirements.txt
+datadog-lambda>=6,<7
