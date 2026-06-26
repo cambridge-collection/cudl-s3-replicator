@@ -1,0 +1,16 @@
+services:
+  lambda:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - tests/env/test.env
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-__example__}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-__example__}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-__example__}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-eu-west-1}
+      AWS_REGION: ${AWS_REGION:-eu-west-1}
+      AWS_EC2_METADATA_DISABLED: "true"
+    ports:
+      - "9000:8080"
