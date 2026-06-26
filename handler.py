@@ -5,19 +5,22 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import unquote_plus
 
 import boto3
 from botocore.exceptions import ClientError
 
+if TYPE_CHECKING:
+    from mypy_boto3_s3 import S3Client
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-_s3: Any = None  # module-level client, replaced in tests
+_s3: S3Client | None = None  # module-level client, replaced in tests
 
 
-def _get_s3() -> Any:
+def _get_s3() -> S3Client:
     global _s3
     if _s3 is None:
         _s3 = boto3.client("s3")
