@@ -65,7 +65,7 @@ pip install -r requirements-dev.txt
 ruff check . && black --check .
 
 # Type check
-mypy handler.py
+mypy s3_replicator
 
 # Run tests
 pytest -v
@@ -136,7 +136,7 @@ Add an entry to `transform-lambda-information` in the relevant `terraform.tfvars
     DEST_BUCKET       = "<destination-bucket-name>"
     STRIP_PREFIX      = "ui/"
     DEST_PREFIX       = "html/"
-    DD_LAMBDA_HANDLER = "handler.handler"
+    DD_LAMBDA_HANDLER = "s3_replicator.handler.handler"
   }
 }
 ```

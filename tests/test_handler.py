@@ -12,7 +12,7 @@ import pytest
 from moto import mock_aws
 from pytest_mock import MockerFixture
 
-import handler as h
+import s3_replicator.handler as h
 
 # ---------------------------------------------------------------------------
 # Fixtures

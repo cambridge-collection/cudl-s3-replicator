@@ -10,9 +10,9 @@ COPY --from=public.ecr.aws/datadog/lambda-extension:latest \
 COPY requirements.txt requirements-datadog.txt ${LAMBDA_TASK_ROOT}/
 RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements-datadog.txt
 
-COPY handler.py ${LAMBDA_TASK_ROOT}/
+COPY s3_replicator ${LAMBDA_TASK_ROOT}/s3_replicator
 
 # Default entrypoint. When Datadog monitoring is enabled, override this via
 # the Terraform image_config command to "datadog_lambda.handler.handler" and
-# set DD_LAMBDA_HANDLER="handler.handler" in environment_variables.
-CMD ["handler.handler"]
+# set DD_LAMBDA_HANDLER="s3_replicator.handler.handler" in environment_variables.
+CMD ["s3_replicator.handler.handler"]
